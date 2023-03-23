@@ -1,5 +1,5 @@
 <p>All Gifs for Today!!!</p>
-<input type="text" (keyup)="onKeyDown($event)"/><br/>
+<input type="text" (keyup)="onKeyDown($event)" placeholder="Start typing..."/><br/>
 <div class="mainWrapper">
     <div *ngFor="let g of giphyList">
         <a [href]="g.siteUrl" target="_blank" [title]="g.title">
