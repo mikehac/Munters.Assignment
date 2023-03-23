@@ -25,11 +25,12 @@ namespace Munters.Assignment.Services
         {
             _client = client;
             _config = config;
-            _trendingUrl = string.Format(_config.Value.BaseGiphyUrl, "trending", _config.Value.ApiKey);
-            _searchUrl = string.Format(_config.Value.BaseGiphyUrl, "search", _config.Value.ApiKey);
             _cache = cache;
             _logger = logger;
             _mapper = mapper;
+
+            _trendingUrl = string.Format(_config.Value.BaseGiphyUrl, "trending", _config.Value.ApiKey);
+            _searchUrl = string.Format(_config.Value.BaseGiphyUrl, "search", _config.Value.ApiKey);
         }
 
         public async Task<GiphyResponseDTO> GetTrending()
@@ -39,22 +40,8 @@ namespace Munters.Assignment.Services
 
         public async Task<GiphyResponseDTO> SearchAsync(string query)
         {
-            var cacheResult = _cache.Get(query);
-            if (cacheResult is not null)
-            {
-                _logger.LogInformation($"Cache was found for query {query}");
-                return cacheResult;
-            }
-
             string fullSearchUrl = $"{_searchUrl}&q={query}";
-            var result = await CreateGetRequest(fullSearchUrl);
-            if (result is not null && result.data is not null && result.data.Any())
-            {
-                _logger.LogInformation($"The query {query} was added to the cache");
-                _cache.Set(query, result);
-            }
-
-            return result;
+            return await _cache.GetOrCreate(query, () => CreateGetRequest(fullSearchUrl));
         }
 
         private async Task<GiphyResponseDTO> CreateGetRequest(string url)

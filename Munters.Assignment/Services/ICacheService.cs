@@ -4,7 +4,6 @@ namespace Munters.Assignment.Services
 {
     public interface ICacheService
     {
-        GiphyResponseDTO? Get(string query);
-        void Set(string query, GiphyResponseDTO value);
+        Task<GiphyResponseDTO> GetOrCreate(string cacheKey, Func<Task<GiphyResponseDTO>> func);
     }
 }
