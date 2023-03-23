@@ -1,6 +1,9 @@
 <p>All Gifs for Today!!!</p>
-<div *ngFor="let g of giphyList">
-    <a [href]="g.siteUrl" target="_blank" [title]="g.title">
-        <img [src]="g.imageUrl"/>
-    </a>
+<input type="text" (keyup)="onKeyDown($event)"/><br/>
+<div class="mainWrapper">
+    <div *ngFor="let g of giphyList">
+        <a [href]="g.siteUrl" target="_blank" [title]="g.title">
+            <img [src]="g.imageUrl"/>
+        </a>
+    </div>
 </div>

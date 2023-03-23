@@ -18,8 +18,14 @@ export class GiphyListComponent implements OnInit {
     this.giphyService.get()
       .subscribe(g => {
         this.giphyList = g.data;
-        console.log(g.data);
+        // console.log(g.data);
     });
   }
-
+  onKeyDown($event) {
+    console.log($event.target.value);
+    this.giphyService.getByQuery($event.target.value)
+      .subscribe(g => {
+        this.giphyList = g.data;
+      });
+  }
 }
