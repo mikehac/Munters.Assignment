@@ -1,0 +1,6 @@
+<p>All Gifs for Today!!!</p>
+<div *ngFor="let g of giphyList">
+    <a [href]="g.siteUrl" target="_blank" [title]="g.title">
+        <img [src]="g.imageUrl"/>
+    </a>
+</div>
