@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Munters.Assignment.DTOs;
 using Munters.Assignment.Services;
 
 namespace Munters.Assignment.Controllers
@@ -21,26 +23,39 @@ namespace Munters.Assignment.Controllers
         public async Task<IActionResult> Get()
         {
             var result = await _giphyService.GetTrending();
-            if (result == null || !result.data.Any())
-            {
-                _logger.LogInformation($"No giphies were found");
-                return NotFound();
-            }
-
-            return Ok(result);
+            return ValidateResult(result);
         }
 
         [HttpGet("{query}")]
         public async Task<IActionResult> Get(string query)
         {
             var result = await _giphyService.SearchAsync(query);
-            if (result == null || !result.data.Any())
+            return ValidateResult(result, query);
+        }
+
+        private IActionResult ValidateResult(GiphyResponseDTO response, string query = "")
+        {
+            // if the response from giphy server failed, reflect the status code to the client
+            if (!response.responseStatusCode.Equals(200))
             {
-                _logger.LogInformation($"No giphies were found for query {query}");
+                return response.responseStatusCode switch
+                {
+                    401 => Unauthorized(),
+                    404 => NotFound(),
+                    _ => BadRequest()
+                };
+            }
+
+            // if the response from giphy server succeeded, but no giphies where found
+            if (response == null || !response.data.Any())
+            {
+                _logger.LogInformation(string.IsNullOrEmpty(query) ?
+                                          $"No giphies were found" :
+                                          $"No giphies were found for query {query}");
                 return NotFound();
             }
 
-            return Ok(result);
+            return Ok(response);
         }
     }
 }

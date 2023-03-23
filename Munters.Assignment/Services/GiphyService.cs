@@ -34,7 +34,7 @@ namespace Munters.Assignment.Services
 
         public async Task<GiphyResponseDTO> GetTrending()
         {
-            return _mapper.Map<GiphyResponseDTO>(await _client.GetFromJsonAsync<GiphyResponse>(_trendingUrl));
+            return await CreateGetRequest(_trendingUrl);
         }
 
         public async Task<GiphyResponseDTO> SearchAsync(string query)
@@ -47,13 +47,27 @@ namespace Munters.Assignment.Services
             }
 
             string fullSearchUrl = $"{_searchUrl}&q={query}";
-            var result = _mapper.Map<GiphyResponseDTO>(await _client.GetFromJsonAsync<GiphyResponse>(fullSearchUrl));
-            if (result is not null && result.data.Any())
+            var result = await CreateGetRequest(fullSearchUrl);
+            if (result is not null && result.data is not null && result.data.Any())
             {
                 _logger.LogInformation($"The query {query} was added to the cache");
                 _cache.Set(query, result);
             }
 
+            return result;
+        }
+
+        private async Task<GiphyResponseDTO> CreateGetRequest(string url)
+        {
+            var response = await _client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning($"The giphy server response failed, the returned statusCode={response.StatusCode}");
+                return new GiphyResponseDTO((int)response.StatusCode);
+            }
+
+            var result = _mapper.Map<GiphyResponseDTO>(await response.Content.ReadFromJsonAsync<GiphyResponse>());
+            result.responseStatusCode = (int)response.StatusCode;
             return result;
         }
     }
