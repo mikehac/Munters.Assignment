@@ -49,13 +49,16 @@ namespace Munters.Assignment.Services
 
                 result = await func();
 
-                _logger.LogInformation($"The query {cacheKey} was added to the cache");
+                if (result.responseStatusCode == 200)
+                {
+                    _logger.LogInformation($"The query {cacheKey} was added to the cache");
 
-                // Here I limit the time for cache to be saved for 60 seconds
-                // For production I would set it into apsetting configuration file
-                MemoryCacheEntryOptions options = new MemoryCacheEntryOptions();
-                options.SetSlidingExpiration(TimeSpan.FromSeconds(60));
-                _memoryCache.Set<GiphyResponseDTO>(cacheKey, result, options);
+                    // Here I limit the time for cache to be saved for 60 seconds
+                    // For production I would set it into apsetting configuration file
+                    MemoryCacheEntryOptions options = new MemoryCacheEntryOptions();
+                    options.SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                    _memoryCache.Set<GiphyResponseDTO>(cacheKey, result, options);
+                }
             }
             finally
             {
